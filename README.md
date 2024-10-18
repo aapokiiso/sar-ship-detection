@@ -48,7 +48,7 @@ $ python preprocess-iceye-grd.py ~/Downloads/iceye-singapore/ICEYE_GRD_SM_159816
 
 Preprocessing will take some minutes depending on the size of the dataset.
 After it's done, the preprocessed dataset is available as a GeoTIFF file (also a `.tif`) next to the source dataset as `pp_[timestamp]_[original_file_name].tif`.
-For example, as `~/Downloads/iceye-singapore/preprocessed/pp_20241018T154122_ICEYE_GRD_SM_159816_20211114T024121.tif` in this case.
+For example, as `~/Downloads/iceye-singapore/pp_20241018T154122_ICEYE_GRD_SM_159816_20211114T024121.tif` in this case.
 
 Now the dataset can be imported to GIS tools (e.g. ESA SNAP, `rasterio` Python module) and further worked on.
 
@@ -63,7 +63,7 @@ $ python demo-rasterio.py [path/to/preprocessed/geotiff.tif]
 So for example
 
 ```shell
-$ python demo-rasterio.py ~/Downloads/iceye-singapore/preprocessed/pp_20241018T154122_ICEYE_GRD_SM_159816_20211114T024121.tif
+$ python demo-rasterio.py ~/Downloads/iceye-singapore/pp_20241018T154122_ICEYE_GRD_SM_159816_20211114T024121.tif
 ```
 
 It just shows the data as an image after some normalization and clipping of the brightest pixels.
