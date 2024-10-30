@@ -5,6 +5,7 @@
 ### Setting up ESA SNAP
 
 Install ESA SNAP with default options on your Linux machine (or Windows Subsystem for Linux).
+Note that ESA SNAP version 11.0.0 doesn't automatically work with the `esa_snappy` Python module, so install version 10.0.0 instead.
 You can download it [here](https://step.esa.int/main/download/snap-download/), choose the "Sentinel Toolboxes" version.
 This guide assumes it is installed under `~/esa-snap` (default).
 
