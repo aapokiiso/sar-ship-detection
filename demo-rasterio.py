@@ -1,6 +1,7 @@
 import sys
 import rasterio
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 
 if len(sys.argv) < 2:
@@ -31,4 +32,12 @@ plt.imshow(normalized_img, cmap='gray')
 plt.colorbar()  # Optional: Show color scale
 plt.title('Grayscale Image with Dimmed Bright Pixels')
 plt.axis('off')  # Turn off axis labels
+
+# Highlight supposed ships (bright pixels)
+ax = plt.gca()
+ship_coords = np.argwhere(band1 > 1000)
+for yx in ship_coords:
+    rect = patches.Rectangle((yx[1] - 25, yx[0] - 25), 50, 50, linewidth=1, edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+
 plt.show()
