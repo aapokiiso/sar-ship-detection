@@ -32,20 +32,50 @@ def add_elevation_band(product):
     """
 
     parameters = HashMap()
-    parameters.put('bandName', 'elevation')
+    parameters.put('elevationBandName', 'Elevation')
     parameters.put('demName', 'SRTM 3Sec')
     parameters.put('demResamplingMethod', 'BILINEAR_INTERPOLATION')
 
     return GPF.createProduct('AddElevation', parameters, product)
 
-def remove_land_pixels(product):
+def add_land_mask(product):
+    parameters = HashMap()
+
+    BandDescriptor = jpy.get_type('org.esa.snap.core.gpf.common.BandMathsOp$BandDescriptor')
+
+    targetBand1 = BandDescriptor()
+    targetBand1.name = 'Land_Mask'
+    targetBand1.type = 'uint8'
+    targetBand1.expression = 'Elevation > 0 ? 1 : 0'
+
+    targetBands = jpy.array('org.esa.snap.core.gpf.common.BandMathsOp$BandDescriptor', 1)
+    targetBands[0] = targetBand1
+    parameters.put('targetBands', targetBands)
+
+    return GPF.createProduct('BandMaths', parameters, product)
+
+def dilate_land_mask(product):
+    parameters = HashMap()
+    parameters.put('sourceBandNames', 'Land_Mask')
+    # TODO doesn't work, coastline is still visible in some places
+    parameters.put('selectedFilterName', 'Dilation 7x7')
+
+    return GPF.createProduct('Image-Filter', parameters, product)
+
+def mask_land_pixels(product):
     """Filter out land pixels (elevation > 0) via ESA SNAP
 
     See Java implementation for parameters reference:
     https://github.com/senbox-org/snap-engine/blob/master/snap-gpf/src/main/java/org/esa/snap/core/gpf/common/BandMathsOp.java
     """
 
-    product_with_elevation = add_elevation_band(product)
+    land_mask = dilate_land_mask(add_land_mask(add_elevation_band(product)))
+
+    merge_parameters = HashMap()
+    merge_products = HashMap()
+    merge_products.put('masterProduct', product)
+    merge_products.put('slaveProduct', land_mask)
+    product_merged = GPF.createProduct('Merge', merge_parameters, merge_products)
 
     parameters = HashMap()
 
@@ -53,12 +83,12 @@ def remove_land_pixels(product):
     targetBand1 = BandDescriptor()
     targetBand1.name = 'Amplitude_VV'
     targetBand1.type = 'float32'
-    targetBand1.expression = 'elevation <= 0 ? Amplitude_VV : 0'
+    targetBand1.expression = 'Land_Mask == 0 ? Amplitude_VV : 0'
     targetBands = jpy.array('org.esa.snap.core.gpf.common.BandMathsOp$BandDescriptor', 1)
     targetBands[0] = targetBand1
     parameters.put('targetBands', targetBands)
 
-    return GPF.createProduct('BandMaths', parameters, product_with_elevation)
+    return GPF.createProduct('BandMaths', parameters, product_merged)
 
 def terrain_correction(product):
     """Apply terrain correction via ESA SNAP
@@ -92,7 +122,7 @@ if not 'Amplitude_VV' in band_names:
     print('Amplitude_VV band not found in dataset.')
     sys.exit(1)
 
-output = terrain_correction(remove_land_pixels(speckle_filtering(input)))
+output = terrain_correction(mask_land_pixels(speckle_filtering(input)))
 
 timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%dT%H%M%S")
 directory, filename = os.path.split(input_path)
