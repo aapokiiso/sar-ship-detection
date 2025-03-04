@@ -38,13 +38,13 @@ Clone this repository to your machine.
 Then inside the repository directory, run the following, replacing the placeholder path with the actual path to the sample dataset (`.tif` file) you've downloaded.
 
 ```shell
-$ python preprocess-iceye-grd.py [path/to/iceye/dataset.tif]
+$ python preprocess.py [path/to/iceye/dataset.tif]
 ```
 
 For example, if your dataset is located in `~/Downloads/iceye-singapore/ICEYE_GRD_SM_159816_20211114T024121.tif`, run
 
 ```shell
-$ python preprocess-iceye-grd.py ~/Downloads/iceye-singapore/ICEYE_GRD_SM_159816_20211114T024121.tif
+$ python preprocess.py ~/Downloads/iceye-singapore/ICEYE_GRD_SM_159816_20211114T024121.tif
 ```
 
 Preprocessing will take some minutes depending on the size of the dataset.
@@ -53,20 +53,19 @@ For example, as `~/Downloads/iceye-singapore/pp_20241018T154122_ICEYE_GRD_SM_159
 
 Now the dataset can be imported to GIS tools (e.g. ESA SNAP, `rasterio` Python module) and further worked on.
 
-## Using preprocessed data
+## Detect ships
 
-I've added a demo with `rasterio` as an example use-case (requires `rasterio`, `numpy`, and `matplotlib` Python modules).
+Detection requires `rasterio`, `numpy`, and `matplotlib` Python modules.
 
-```shell
-$ python demo-rasterio.py [path/to/preprocessed/geotiff.tif]
-```
-
-So for example
+To detect ships in the preprocessed `.tif` file, run the following.
+You can use either `naive` (based on bright pixels) or `model` (model-based gradient descent).
 
 ```shell
-$ python demo-rasterio.py ~/Downloads/iceye-singapore/pp_20241018T154122_ICEYE_GRD_SM_159816_20211114T024121.tif
+$ python detect.py [naive/model] [path/to/preprocessed/geotiff.tif]
 ```
 
-It just shows the data as an image after some normalization and clipping of the brightest pixels.
-Clipping is required since some pixels, e.g. parts of ships and other metallic structures, can be VERY bright compared to the rest of the pixels, e.g. nature.
-Without clipping, the image would appear almost totally dark after normalization, since there are so few of the brightest pixels.
+So for example to detect ships naively in the previously preprocessed file
+
+```shell
+$ python detect.py naive ~/Downloads/iceye-singapore/pp_20241018T154122_ICEYE_GRD_SM_159816_20211114T024121.tif
+```
